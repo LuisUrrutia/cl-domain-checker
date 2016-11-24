@@ -1,5 +1,7 @@
 """Exception specifications for clChecker"""
 
 
-class ConnectionError(Exception):
-    pass
+class WhoisConnectionError(Exception):
+    """
+    An Exception for when the whois connection failed.
+    """

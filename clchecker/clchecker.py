@@ -8,7 +8,7 @@ import socket
 import re
 
 # Application imports
-from clchecker.exception import ConnectionError
+from clchecker.exception import WhoisConnectionError
 
 # Regexp to match with server response
 who = re.compile(r"\)\n+(\S.*\S)")
@@ -17,14 +17,38 @@ administrative = re.compile(r"Administrative.*\n.*Nombre\s+:\s+(.*)\n.*ón:\s(.*
 technical = re.compile(r"Technical.*\n.*Nombre\s+:\s+(.*)\n.*ón:\s(.*)")
 
 
-def check(domain):
+def check(domain, info=False):
+    """Check if a domain is registered or not, with info about it if is required.
+
+    :param domain: A domain name to check, it must be a .cl domain.
+    :param info: Return info about the domain if its registered.
+    :return: A boolean or False/Dict if info param is True.
+    """
+    buffer = whois(domain)
+
+    if b'no existe' in buffer:
+        return False
+
+    if info:
+        return _parse_whois_data(buffer)
+
+    return True
+
+
+def whois(domain):
+    """Performs a whois lookup with NIC.cl whois server.
+
+    :param domain: Domain name to perform a lookup.
+    :return: Bytes literals with info about the domain.
+    """
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
         sock.connect(("whois.nic.cl", 43))
     except:
-        raise ConnectionError("Can't connect to NIC.cl WHOIS server.")
+        raise WhoisConnectionError("Can't connect to NIC.cl WHOIS server.")
 
+    sock.settimeout(5.0)
     sock.send(("%s\r\n" % domain).encode("utf-8"))
 
     buff = b''
@@ -34,10 +58,16 @@ def check(domain):
             break
         buff += data
 
-    if b'no existe' in buff:
-        return None
+    return buff
 
-    str_buff = buff.decode("latin-1")
+
+def _parse_whois_data(buffer):
+    """Parse the data obtained through a whois lookup.
+
+    :param buffer: Bytes literals with info about the domain.
+    :return: Dictionary with the parsed info.
+    """
+    str_buff = buffer.decode("latin-1")
 
     try:
         who_match = who.search(str_buff).group(1)
@@ -75,5 +105,3 @@ def check(domain):
         'technical_name': technical_name_match,
         'technical_organization': technical_organization_match
     }
-
-
