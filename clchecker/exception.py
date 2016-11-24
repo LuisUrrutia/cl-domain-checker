@@ -11,3 +11,9 @@ class InvalidDomain(Exception):
     """
     An Exception to denote that the domain is invalid.
     """
+
+
+class WhoisServerNotResponding(Exception):
+    """
+    An Exception to denote that NIC.cl whois server is not responding us.
+    """

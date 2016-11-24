@@ -3,6 +3,7 @@ import unittest
 from clchecker.clchecker import check, domain_checker, whois, _is_valid_domain, _parse_whois_data
 
 
+
 class TestClCheckerMethods(unittest.TestCase):
 
     general_message = 'Testing domain \'{0}\''
@@ -44,6 +45,8 @@ class TestClCheckerMethods(unittest.TestCase):
             self.assertFalse(_is_valid_domain(invalid_domain), self.general_message.format(invalid_domain))
 
     def test_check(self):
+        from clchecker.exception import WhoisServerNotResponding, WhoisConnectionError
+
         registered_domains = [
             'dxpress.cl',
             'bug.cl',
@@ -61,10 +64,24 @@ class TestClCheckerMethods(unittest.TestCase):
         ]
 
         for registered_domain in registered_domains:
-            self.assertTrue(check(registered_domain), self.general_message.format(registered_domain))
+            try:
+                self.assertTrue(check(registered_domain), self.general_message.format(registered_domain))
+            except WhoisServerNotResponding:
+                pass
+            except WhoisConnectionError:
+                pass
+            except Exception as e:
+                self.fail('Unexpected exception raised: ', e)
 
         for not_registered_domain in not_registered_domains:
-            self.assertFalse(check(not_registered_domain), self.general_message.format(not_registered_domain))
+            try:
+                self.assertFalse(check(not_registered_domain), self.general_message.format(not_registered_domain))
+            except WhoisServerNotResponding:
+                pass
+            except WhoisConnectionError:
+                pass
+            except Exception as e:
+                self.fail('Unexpected exception raised: ', e)
 
 
 if __name__ == '__main__':

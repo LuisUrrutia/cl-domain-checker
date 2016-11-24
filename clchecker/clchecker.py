@@ -10,6 +10,7 @@ import re
 # Application imports
 from clchecker.exception import WhoisConnectionError
 from clchecker.exception import InvalidDomain
+from clchecker.exception import WhoisServerNotResponding
 
 # Regexp to check if domain is valid
 domain_checker = re.compile(r"[0-9a-zñáéíóú]+\.cl$", re.IGNORECASE)
@@ -60,10 +61,17 @@ def whois(domain):
 
     buff = b''
     while True:
-        data = sock.recv(1024)
+        try:
+            data = sock.recv(1024)
+        except socket.timeout:
+            sock.close()
+            raise WhoisServerNotResponding("The NIC.cl whois server isn't responding. This is maybe due to rate limit.")
+
         if len(data) == 0:
             break
         buff += data
+
+    sock.close()
 
     return buff
 
