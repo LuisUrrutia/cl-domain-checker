@@ -1,7 +1,5 @@
 """Test module for clChecker"""
 import unittest
-from clchecker.clchecker import check, domain_checker, whois, _is_valid_domain, _parse_whois_data
-
 
 
 class TestClCheckerMethods(unittest.TestCase):
@@ -9,6 +7,8 @@ class TestClCheckerMethods(unittest.TestCase):
     general_message = 'Testing domain \'{0}\''
 
     def test_valid_domain(self):
+        from clchecker.clchecker import _is_valid_domain
+
         valid_domains_to_test = [
             'bug.cl',
             'ñato.cl',
@@ -45,6 +45,7 @@ class TestClCheckerMethods(unittest.TestCase):
             self.assertFalse(_is_valid_domain(invalid_domain), self.general_message.format(invalid_domain))
 
     def test_check(self):
+        from clchecker.clchecker import check
         from clchecker.exception import WhoisServerNotResponding, WhoisConnectionError
 
         registered_domains = [
@@ -82,7 +83,3 @@ class TestClCheckerMethods(unittest.TestCase):
                 pass
             except Exception as e:
                 self.fail('Unexpected exception raised: ', e)
-
-
-if __name__ == '__main__':
-    unittest.main()
