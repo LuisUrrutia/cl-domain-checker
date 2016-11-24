@@ -12,7 +12,7 @@ from clchecker.exception import WhoisConnectionError
 from clchecker.exception import InvalidDomain
 
 # Regexp to check if domain is valid
-domain_checker = re.compile(r"[a-zñáéíóú]+\.cl$", re.IGNORECASE)
+domain_checker = re.compile(r"[0-9a-zñáéíóú]+\.cl$", re.IGNORECASE)
 
 # Regexp to match with server response
 who = re.compile(r"\)\n+(\S.*\S)")
@@ -123,5 +123,3 @@ def _parse_whois_data(buffer):
         'technical_name': technical_name_match,
         'technical_organization': technical_organization_match
     }
-
-print(check("devra.cl"))
