@@ -9,6 +9,10 @@ import re
 
 # Application imports
 from clchecker.exception import WhoisConnectionError
+from clchecker.exception import InvalidDomain
+
+# Regexp to check if domain is valid
+domain_checker = re.compile(r"[a-zñáéíóú]+\.cl$", re.IGNORECASE)
 
 # Regexp to match with server response
 who = re.compile(r"\)\n+(\S.*\S)")
@@ -41,6 +45,9 @@ def whois(domain):
     :param domain: Domain name to perform a lookup.
     :return: Bytes literals with info about the domain.
     """
+    if not _is_valid_domain(domain):
+        raise InvalidDomain("The domain must be a valid .cl TLD.")
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
@@ -59,6 +66,17 @@ def whois(domain):
         buff += data
 
     return buff
+
+
+def _is_valid_domain(domain):
+    """Check if the domain is a valid .cl TLD.
+
+    :param domain: The domain to check.
+    :return: Boolean
+    """
+    if domain_checker.match(domain) is not None:
+        return True
+    return False
 
 
 def _parse_whois_data(buffer):
@@ -105,3 +123,5 @@ def _parse_whois_data(buffer):
         'technical_name': technical_name_match,
         'technical_organization': technical_organization_match
     }
+
+print(check("devra.cl"))
